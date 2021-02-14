@@ -2,6 +2,10 @@
   "lock_time": 0,
   "ver": 1,
   "size": 807,
+  "date": "2020-09-30T09:28:43.401Z",
+  "simple": {
+    "timeValue": "2020-09-30T09:28:43.401Z"
+  },
   "inputs": [
     {
       "sequence": 4294967295,

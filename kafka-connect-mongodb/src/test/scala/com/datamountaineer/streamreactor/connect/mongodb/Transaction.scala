@@ -33,7 +33,9 @@ case class Transaction(lock_time: Long,
                        hash: String,
                        vout_sz: Int,
                        relayed_by: String,
-                       out: Seq[Output]) {
+                       out: Seq[Output],
+                       date: String,
+                       simple: Simple ) {
   def toHashMap: util.HashMap[String, Any] = {
     val map = new util.HashMap[String, Any]()
     map.put("lock_time", lock_time)
@@ -49,6 +51,8 @@ case class Transaction(lock_time: Long,
     map.put("hash", hash)
     map.put("vout_sz", vout_sz)
     map.put("relayed_by", relayed_by)
+    map.put("date", date)
+    map.put("simple", simple.toHashMap)
 
     val outArr = new util.ArrayList[Any]()
     out.foreach(o => outArr.add(o.toHashMap))
@@ -74,6 +78,7 @@ object Transaction {
     .field("vout_sz", Schema.INT32_SCHEMA)
     .field("relayed_by", Schema.STRING_SCHEMA)
     .field("out", SchemaBuilder.array(Output.ConnectSchema).optional().build())
+    .field("simple",  Simple.ConnectSchema.schema())
     .build()
 
   implicit class TransactionToSourceRecordConverter(val tx: Transaction) extends AnyVal {
@@ -102,6 +107,8 @@ object Transaction {
         .put("hash", tx.hash)
         .put("vout_sz", tx.vout_sz)
         .put("relayed_by", tx.relayed_by)
+        .put("simple", tx.simple
+        )
 
       tx.out.headOption.foreach { _ =>
         import scala.collection.JavaConverters._

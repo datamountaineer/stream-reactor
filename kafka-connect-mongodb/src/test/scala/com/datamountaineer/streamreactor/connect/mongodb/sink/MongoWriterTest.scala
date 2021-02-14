@@ -258,6 +258,30 @@ class MongoWriterTest extends AnyWordSpec with Matchers with BeforeAndAfterAll {
       runInserts(records, settings)
     }
 
+    "insert records into the target Mongo collection with schemaless records and payload as json using date keys" in {
+      val settings = MongoSettings("localhost",
+        "",
+        new Password(""),
+        AuthenticationMechanism.SCRAM_SHA_1,
+        "local",
+        Set(Kcql.parse("INSERT INTO insert_schemaless_json SELECT * FROM topicA PK scanTime, test.scanTime2")),
+        Map("topicA" -> ListSet("date", "simple.timeValue")),
+        Map("topicA" -> Map("*" -> "*")),
+        Map("topicA" -> Set.empty),
+        NoopErrorPolicy(),
+        jsonDateTimeFields = Set(Seq("date"),  Seq("simple", "timeValue"))
+      )
+      //, "test": { "scanTime2": "2020-09-30T09:23:43.401Z"}, "scanTime":"2020-09-30T09:23:43.401Z"}
+
+      val records = for (i <- 1 to 4) yield {
+        val json = scala.io.Source.fromFile(getClass.getResource(s"/transaction$i.json").toURI.getPath).mkString
+        val tx = Json.fromJson[Transaction](json)
+
+        new SinkRecord("topicA", 0, null, null, null, tx.toHashMap, i)
+      }
+      runInserts(records, settings)
+    }
+
     "upsert records into the target Mongo collection with schemaless records and payload as json" in {
       val settings = MongoSettings("localhost",
         "",

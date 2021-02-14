@@ -16,6 +16,8 @@
 
 package com.datamountaineer.streamreactor.connect.mongodb.sink
 
+import java.util
+
 import com.datamountaineer.streamreactor.connect.mongodb.config.MongoSettings
 import com.datamountaineer.streamreactor.connect.mongodb.converters.SinkRecordConverter
 import com.datamountaineer.streamreactor.connect.schemas.ConverterUtil
@@ -56,8 +58,11 @@ object SinkRecordToDocument extends ConverterUtil {
           )
           //not ideal; but the compile is hashmap anyway
 
-          SinkRecordConverter.fromMap(extracted.asInstanceOf[java.util.Map[String, AnyRef]]) ->
-            keys.headOption.map(_ => KeysExtractor.fromMap(extracted, keys)).getOrElse(Iterable.empty)
+          val document: Document = SinkRecordConverter.fromMap(extracted.asInstanceOf[util.Map[String, AnyRef]])
+          val mapDocument: util.Map[String, Any] = new util.HashMap[String, Any]()
+          document.forEach((k, v) => mapDocument.put(k, v))
+          document ->
+            keys.headOption.map(_ => KeysExtractor.fromMap(mapDocument, keys)).getOrElse(Iterable.empty)
         case _ => sys.error("For schemaless record only String and Map types are supported")
       }
     } else {
