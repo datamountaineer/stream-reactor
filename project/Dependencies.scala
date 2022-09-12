@@ -114,6 +114,7 @@ object Dependencies {
     val javaxCacheVersion = "1.1.1"
 
     val influxVersion = "2.22"
+    val influx2Version = "6.5.0"
 
     val jmsApiVersion                 = "2.0.1"
     val activeMqVersion               = "5.16.5"
@@ -379,6 +380,7 @@ object Dependencies {
 
   lazy val javaxCache = "javax.cache"  % "cache-api"     % javaxCacheVersion
   lazy val influx     = "org.influxdb" % "influxdb-java" % influxVersion
+  lazy val influx2     = "com.influxdb" % "influxdb-client-java" % influx2Version
 
   lazy val jmsApi   = "javax.jms"           % "javax.jms-api" % jmsApiVersion
   lazy val activeMq = "org.apache.activemq" % "activemq-all"  % activeMqVersion
@@ -546,6 +548,7 @@ trait Dependencies {
   )
 
   val kafkaConnectInfluxDbDeps: Seq[ModuleID] = Seq(influx, avro4s, avro4sJson)
+  val kafkaConnectInfluxDb2Deps: Seq[ModuleID] = Seq(influx2, avro4s, avro4sJson)
 
   // TODO: The confluent version should be overridden by dependency overrides if we're building 2.6
   // Find a more elegant solution to pick the right dependencies.  May require some refactoring.

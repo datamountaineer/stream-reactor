@@ -1,19 +1,31 @@
-package com.datamountaineer.streamreactor.connect.influx.converters
+package com.datamountaineer.streamreactor.connect.influx2.converters
 
-import com.datamountaineer.streamreactor.connect.influx.NanoClock
-import com.datamountaineer.streamreactor.connect.influx.converters.SinkRecordParser.{ParsedKeyValueSinkRecord, ParsedSinkRecord}
-import com.datamountaineer.streamreactor.connect.influx.helpers.Util
-import com.datamountaineer.streamreactor.connect.influx.writers.KcqlDetails
-import com.datamountaineer.streamreactor.connect.influx.writers.KcqlDetails.{ConstantTag, DynamicTag, Path}
-import org.influxdb.dto.Point
+import com.datamountaineer.streamreactor.connect.influx2.NanoClock
+import com.datamountaineer.streamreactor.connect.influx2.converters.SinkRecordParser.{ParsedKeyValueSinkRecord, ParsedSinkRecord}
+import com.datamountaineer.streamreactor.connect.influx2.helpers.Util
+import com.datamountaineer.streamreactor.connect.influx2.writers.KcqlDetails
+import com.datamountaineer.streamreactor.connect.influx2.writers.KcqlDetails.{ConstantTag, DynamicTag, Path}
+import com.influxdb.client.write.Point
 
 import java.time.Instant
-import java.util.Date
 import java.util.concurrent.TimeUnit
+import java.util.Date
+import com.influxdb.client.domain.WritePrecision
 import scala.jdk.CollectionConverters.ListHasAsScala
 import scala.util.{Failure, Success, Try}
 
 object InfluxPoint {
+
+    val T_to_I = Map(
+        TimeUnit.DAYS -> WritePrecision.S,
+        TimeUnit.HOURS -> WritePrecision.S,
+        TimeUnit.MINUTES -> WritePrecision.S,
+        TimeUnit.SECONDS -> WritePrecision.S,
+        TimeUnit.MILLISECONDS -> WritePrecision.MS,
+        TimeUnit.MICROSECONDS -> WritePrecision.US,
+        TimeUnit.NANOSECONDS -> WritePrecision.NS
+    )
+
 
   def build(nanoClock: NanoClock)(record: ParsedKeyValueSinkRecord,
                                   details: KcqlDetails): Try[Point] =
@@ -23,7 +35,8 @@ object InfluxPoint {
         .flatMap(record.field)
         .map(_.toString)
         .getOrElse(details.target)
-      pointBuilder = Point.measurement(measurement).time(timestamp, timeUnit)
+      infl_timeunit = T_to_I(timeUnit)
+      pointBuilder = Point.measurement(measurement).time(timestamp, infl_timeunit)
       point <- addValuesAndTags(pointBuilder, record, details)
     } yield point.build()
 
@@ -76,7 +89,7 @@ object InfluxPoint {
       }
       .getOrElse(Try(TimeUnit.NANOSECONDS -> nanoClock.getEpochNanos))
 
-  private[influx] def coerceTimeStamp(
+  private[influx2] def coerceTimeStamp(
       value: Any,
       fieldPath: Iterable[String]): Try[Long] = {
     value match {
