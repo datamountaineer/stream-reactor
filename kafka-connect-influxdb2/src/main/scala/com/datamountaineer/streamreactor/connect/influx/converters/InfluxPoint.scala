@@ -1,19 +1,31 @@
-package com.datamountaineer.streamreactor.connect.influx.converters
+package com.datamountaineer.streamreactor.connect.influx2.converters
 
-import com.datamountaineer.streamreactor.connect.influx.NanoClock
-import com.datamountaineer.streamreactor.connect.influx.converters.SinkRecordParser.{ParsedKeyValueSinkRecord, ParsedSinkRecord}
-import com.datamountaineer.streamreactor.connect.influx.helpers.Util
-import com.datamountaineer.streamreactor.connect.influx.writers.KcqlDetails
-import com.datamountaineer.streamreactor.connect.influx.writers.KcqlDetails.{ConstantTag, DynamicTag, Path}
-import org.influxdb.dto.Point
+import com.datamountaineer.streamreactor.connect.influx2.NanoClock
+import com.datamountaineer.streamreactor.connect.influx2.converters.SinkRecordParser.{ParsedKeyValueSinkRecord, ParsedSinkRecord}
+import com.datamountaineer.streamreactor.connect.influx2.helpers.Util
+import com.datamountaineer.streamreactor.connect.influx2.writers.KcqlDetails
+import com.datamountaineer.streamreactor.connect.influx2.writers.KcqlDetails.{ConstantTag, DynamicTag, Path}
+import com.influxdb.client.write.Point
 
 import java.time.Instant
-import java.util.Date
 import java.util.concurrent.TimeUnit
+import java.util.Date
+import com.influxdb.client.domain.WritePrecision
 import scala.jdk.CollectionConverters.ListHasAsScala
 import scala.util.{Failure, Success, Try}
 
 object InfluxPoint {
+
+    val T_to_I = Map(
+        TimeUnit.DAYS -> WritePrecision.S,
+        TimeUnit.HOURS -> WritePrecision.S,
+        TimeUnit.MINUTES -> WritePrecision.S,
+        TimeUnit.SECONDS -> WritePrecision.S,
+        TimeUnit.MILLISECONDS -> WritePrecision.MS,
+        TimeUnit.MICROSECONDS -> WritePrecision.US,
+        TimeUnit.NANOSECONDS -> WritePrecision.NS
+    )
+
 
   def build(nanoClock: NanoClock)(record: ParsedKeyValueSinkRecord,
                                   details: KcqlDetails): Try[Point] =
@@ -23,13 +35,14 @@ object InfluxPoint {
         .flatMap(record.field)
         .map(_.toString)
         .getOrElse(details.target)
-      pointBuilder = Point.measurement(measurement).time(timestamp, timeUnit)
+      infl_timeunit = T_to_I(timeUnit)
+      pointBuilder = Point.measurement(measurement).time(timestamp, infl_timeunit)
       point <- addValuesAndTags(pointBuilder, record, details)
-    } yield point.build()
+    } yield point
 
-  private def addValuesAndTags(pointBuilder: Point.Builder,
+  private def addValuesAndTags(pointBuilder: Point,
                                record: ParsedKeyValueSinkRecord,
-                               details: KcqlDetails): Try[Point.Builder] =
+                               details: KcqlDetails): Try[Point] =
     details.NonIgnoredFields
       .flatMap {
         case (_, path, _) if path.equals(Path(Util.KEY_All_ELEMENTS)) =>
@@ -60,7 +73,7 @@ object InfluxPoint {
           }
           .foldLeft(Try(builder))((builder, tag) => {
             tag match {
-              case (key, Some(value)) => builder.map(_.tag(key, value))
+              case (key, Some(value)) => builder.map(_.addTag(key, value))
               case (_, None)          => builder
             }
           }))
@@ -76,7 +89,7 @@ object InfluxPoint {
       }
       .getOrElse(Try(TimeUnit.NANOSECONDS -> nanoClock.getEpochNanos))
 
-  private[influx] def coerceTimeStamp(
+  private[influx2] def coerceTimeStamp(
       value: Any,
       fieldPath: Iterable[String]): Try[Long] = {
     value match {
@@ -101,8 +114,8 @@ object InfluxPoint {
     }
   }
 
-  def writeField(builder: Point.Builder)(field: String,
-                                         v: Any): Try[Point.Builder] = v match {
+  def writeField(builder: Point)(field: String,
+                                         v: Any): Try[Point] = v match {
     case value: Long                 => Try(builder.addField(field, value))
     case value: Int                  => Try(builder.addField(field, value))
     case value: BigInt               => Try(builder.addField(field, value))
@@ -126,7 +139,7 @@ object InfluxPoint {
    * Flatten an array writing each element as a new field with the following convention:
    * "name": ["a", "b", "c"] => name0 = "a", name1 = "b", name3 = "c"
    */
-  private def flattenArray(builder: Point.Builder)(field: String, value: java.util.List[_]) = {
+  private def flattenArray(builder: Point)(field: String, value: java.util.List[_]) = {
     val res = value.asScala.zipWithIndex.map {
       case (el, i) => writeField(builder)(field + i, el)
     }

@@ -34,6 +34,9 @@ object TraitConfigConst {
   val KEYSTORE_PASS_SUFFIX             = "keystore.pass"
   val KEYSTORE_PATH_SUFFIX             = "keystore.path"
   val CERTIFICATES_SUFFIX              = "certs"
+  val ORG_SUFFIX                       = "organization"
+  val BUCKET_PROP_SUFFIX               = "bucket"
+  val TOKEN_SUFFIX                     = "suffix"
   val CERTIFICATE_KEY_CHAIN_SUFFIX     = "cert.chain.key"
   val CERT_KEY                         = "cert.key"
 
