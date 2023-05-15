@@ -33,7 +33,7 @@ object S3FormatStreamReader {
   ): S3FormatStreamReader[_ <: SourceData] =
     format.format match {
       case Format.Avro    => new AvroFormatStreamReader(inputStreamFn, bucketAndPath)
-      case Format.Json    => new TextFormatStreamReader(inputStreamFn, bucketAndPath)
+      case Format.Json    => new JsonFormatStreamReader(inputStreamFn, bucketAndPath)
       case Format.Text    => new TextFormatStreamReader(inputStreamFn, bucketAndPath)
       case Format.Parquet => new ParquetFormatStreamReader(inputStreamFn, fileSizeFn, bucketAndPath)
       case Format.Csv =>

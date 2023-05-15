@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Specification-Title: kafka-connect-aws-s3-kafka-3-1
+Specification-Version: 1.1-SNAPSHOT
+Specification-Vendor: com.celonis.kafka.connect
+Implementation-Title: kafka-connect-aws-s3-kafka-3-1
+Implementation-Version: 1.1-SNAPSHOT
+Implementation-Vendor: com.celonis.kafka.connect
+Implementation-Vendor-Id: com.celonis.kafka.connect
+
