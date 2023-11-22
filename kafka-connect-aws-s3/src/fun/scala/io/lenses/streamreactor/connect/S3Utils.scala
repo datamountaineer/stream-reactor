@@ -36,6 +36,10 @@ object S3Utils extends EitherValues with LazyLogging {
             )
             .build(),
         )
+      }.onError {
+        ex: Throwable =>
+          logger.error("Error creating bucket", ex)
+          IO.unit
       }
     } { _ =>
       IO {

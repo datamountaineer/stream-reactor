@@ -21,7 +21,7 @@ import java.nio.file.{Files, Paths}
 import java.time.Duration
 import java.util.{Properties, UUID}
 import scala.collection.mutable.ListBuffer
-import scala.jdk.CollectionConverters.IteratorHasAsScala
+import scala.jdk.CollectionConverters.{IteratorHasAsScala, SetHasAsJava}
 import scala.util.{Failure, Success, Try}
 
 trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually with LazyLogging { this: AsyncTestSuite =>
@@ -115,6 +115,14 @@ trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually w
     new KafkaConsumer[String, String](props, new StringDeserializer(), new StringDeserializer())
   }
 
+  def createConsumerResource(topics: Set[String]): Resource[IO, KafkaConsumer[String, String]] = {
+    Resource.fromAutoCloseable(IO{
+      val consumer = createConsumer()
+      consumer.subscribe(topics.asJava)
+      consumer
+    })
+  }
+
   /**
     * Drain a kafka topic.
     *
@@ -127,6 +135,7 @@ trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually w
   def drain[K, V](consumer: KafkaConsumer[K, V], expectedRecordCount: Int): List[ConsumerRecord[K, V]] = {
     val allRecords = ListBuffer[ConsumerRecord[K, V]]()
     eventually {
+      logger.info("DRAINING...")
       consumer.poll(Duration.ofMillis(50))
         .iterator()
         .forEachRemaining(allRecords.addOne)
@@ -134,4 +143,5 @@ trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually w
     }
     allRecords.toList
   }
+
 }
