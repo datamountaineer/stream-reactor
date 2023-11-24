@@ -142,7 +142,7 @@ object Settings extends Dependencies {
     Compile / connectInput := true,
     Compile / outputStrategy := Some(StdoutOutput),
     resolvers ++= projectResolvers,
-    crossScalaVersions := Dependencies.supportedScalaVersions,
+    scalaVersion := Dependencies.scalaVersion,
     excludeDependencies ++= globalExcludeDeps,
     headerLicense := Some(HeaderLicense.ALv2(s"2017-$currentYear", "Lenses.io Ltd")),
   )

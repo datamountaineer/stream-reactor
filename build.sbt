@@ -8,8 +8,6 @@ import sbt.Project.projectToLocalProject
 
 import java.io.File
 
-ThisBuild / scalaVersion := Dependencies.scalaVersion
-
 lazy val subProjects: Seq[Project] = Seq(
   `query-language`,
   common,
@@ -39,6 +37,7 @@ lazy val root = (project in file("."))
     publish := {},
     publishArtifact := false,
     name := "stream-reactor",
+    scalaVersion := Dependencies.scalaVersion,
   )
   .aggregate(
     subProjectsRefs: _*,

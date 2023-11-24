@@ -1,8 +1,10 @@
 // Activate the following only when needed to use specific tasks like `whatDependsOn` etc...
 //addDependencyTreePlugin
-
+ThisBuild / libraryDependencySchemes ++= Seq(
+  "org.scala-lang.modules" %% "scala-xml" % VersionScheme.Always,
+)
 addSbtPlugin("org.scalameta"     % "sbt-scalafmt"       % "2.5.2")
-addSbtPlugin("org.scoverage"     % "sbt-scoverage"      % "1.9.3")
+addSbtPlugin("org.scoverage"     % "sbt-scoverage"      % "2.0.8")
 addSbtPlugin("de.heikoseeberger" % "sbt-header"         % "5.9.0")
 addSbtPlugin("com.typesafe.sbt"  % "sbt-license-report" % "1.2.0")
 

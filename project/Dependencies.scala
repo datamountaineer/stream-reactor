@@ -28,7 +28,7 @@ object Dependencies {
   // scala versions
   val scalaOrganization = "org.scala-lang"
   val scalaVersion      = "2.13.10"
-  val supportedScalaVersions: Seq[String] = List(Dependencies.scalaVersion)
+  //val supportedScalaVersions: Seq[String] = List(Dependencies.scalaVersion)
 
   val commonResolvers: Seq[MavenRepository] = Seq(
     Resolver sonatypeRepo "public",
@@ -43,8 +43,7 @@ object Dependencies {
 
   object Versions {
     // libraries versions
-    val scalatestVersion               = "3.2.15" // Higher versions result in org.scala-lang.modules:scala-xml conflicts
-    val scalaCheckPlusVersion          = "3.1.0.0"
+    val scalatestVersion               = "3.2.17"
     val scalatestPlusScalaCheckVersion = "3.1.0.0-RC2"
     val scalaCheckVersion              = "1.17.0"
     val randomDataGeneratorVersion     = "2.8"
@@ -201,11 +200,9 @@ object Dependencies {
 
   // testing
   val scalatest = "org.scalatest" %% "scalatest" % scalatestVersion
-  val scalatestPlusScalaCheck =
-    "org.scalatestplus" %% "scalatestplus-scalacheck" % scalatestPlusScalaCheckVersion
-  val scalaCheck      = "org.scalacheck" %% "scalacheck"      % scalaCheckVersion
-  val `mockito-scala` = "org.mockito"    %% "mockito-scala"   % mockitoScalaVersion
-  val junit           = "com.github.sbt"  % "junit-interface" % "0.13.3"
+
+  val scalaCheck      = "org.scalacheck" %% "scalacheck"    % scalaCheckVersion
+  val `mockito-scala` = "org.mockito"    %% "mockito-scala" % mockitoScalaVersion
 
   lazy val pegDown = "org.pegdown" % "pegdown" % "1.6.0"
 
@@ -475,14 +472,12 @@ trait Dependencies {
     catsEffect,
     scalatest,
     catsEffectScalatest,
-    scalatestPlusScalaCheck,
     scalaCheck,
     `mockito-scala`,
     `wiremock-jre8`,
     jerseyCommon,
     avro4s,
     kafkaClients,
-    junit,
   ) ++ enumeratum ++ circe ++ http4s
 
   //Specific modules dependencies

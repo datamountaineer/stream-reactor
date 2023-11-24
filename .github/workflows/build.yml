@@ -1,5 +1,9 @@
 name: CI
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 on:
   pull_request:
   workflow_call:
@@ -68,7 +72,6 @@ jobs:
   test:
     needs:
       - initiate
-      - scalafmt
     timeout-minutes: 5
     runs-on: ubuntu-latest
     strategy:
@@ -83,7 +86,7 @@ jobs:
           distribution: 'temurin'
           cache: 'sbt'
       - name: Run tests
-        run: sbt "project ${{ matrix.module }}" test
+        run: sbt "project ${{ matrix.module }}" clean coverage test coverageReport
         env:
           JVM_OPTS: -Xmx3200m
       - name: Publish test results
@@ -93,11 +96,21 @@ jobs:
           files: "**/target/**/test-reports/*.xml"
           check_name: ${{ matrix.module }}-test-results
           comment_mode: off
+      - name: Rename coverage results
+        run : |
+          if [ -f kafka-connect-${{ matrix.module }}/target/scala-2.13/coverage-report/cobertura.xml ]; then
+            mv kafka-connect-${{ matrix.module }}/target/scala-2.13/coverage-report/cobertura.xml kafka-connect-${{ matrix.module }}/target/scala-2.13/coverage-report/${{ matrix.module }}-cobertura.xml
+          fi
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.module }}-coverage-report
+          path: "**/target/**/coverage-report/*.xml"
+          if-no-files-found: ignore
 
   integration-test:
     needs:
       - initiate
-      - scalafmt
     timeout-minutes: 30
     continue-on-error: true
     runs-on: ubuntu-latest
@@ -259,3 +272,20 @@ jobs:
         with:
           name: assembly-${{ matrix.module }}-${{ github.run_id }}
           path: ~/**/target/libs/*.jar
+
+  collate-coverage:
+    needs:
+      - test
+      #- integration-test
+    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download coverage reports
+        uses: actions/download-artifact@v3
+      - name: Publish coverage report
+        uses: 5monkeys/cobertura-action@master
+        with:
+          path: "**/target/**/coverage-report/*.xml"
+          minimum_coverage: 60
+          fail_below_threshold: false
+          only_changed_files: true
