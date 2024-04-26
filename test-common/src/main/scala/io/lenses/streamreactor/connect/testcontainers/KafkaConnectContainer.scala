@@ -19,6 +19,7 @@ import com.github.dockerjava.api.model.Ulimit
 import io.lenses.streamreactor.connect.testcontainers.KafkaVersions.ConfluentVersion
 import io.lenses.streamreactor.connect.testcontainers.KafkaConnectContainer.defaultNetworkAlias
 import io.lenses.streamreactor.connect.testcontainers.KafkaConnectContainer.defaultRestPort
+import org.testcontainers.containers.BindMode
 import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.wait.strategy.Wait
@@ -92,6 +93,13 @@ class KafkaConnectContainer(
 
   def installPackage(pkg: String): ExecResult =
     rootExecInContainer(container = this, commands = Seq(s"microdnf", "install", pkg))
+
+  def copyBinds(binds: Seq[(String, String)]): Unit =
+    binds.foreach {
+      case (k, v) =>
+        addFileSystemBind(k, v, BindMode.READ_WRITE)
+    }
+
 }
 object KafkaConnectContainer {
   private val dockerImage         = DockerImageName.parse("confluentinc/cp-kafka-connect")

@@ -1,6 +1,8 @@
 import Dependencies.Versions
 import Dependencies.globalExcludeDeps
 import Dependencies.gson
+import Dependencies.bouncyCastle
+
 import Settings.*
 import sbt.Keys.libraryDependencies
 import sbt.*
@@ -19,8 +21,9 @@ lazy val subProjects: Seq[Project] = Seq(
   `azure-documentdb`,
   `azure-datalake`,
   cassandra,
-  elastic6,
-  elastic7,
+  `elastic-common`,
+  opensearch,
+  elastic8,
   ftp,
   `gcp-storage`,
   http,
@@ -220,18 +223,17 @@ lazy val cassandra = (project in file("kafka-connect-cassandra"))
   .configureFunctionalTests()
   .enablePlugins(PackPlugin)
 
-lazy val elastic6 = (project in file("kafka-connect-elastic6"))
+lazy val `elastic-common` = (project in file("kafka-connect-elastic-common"))
   .dependsOn(common)
   .dependsOn(`sql-common`)
   .dependsOn(`test-common` % "fun->compile")
   .settings(
     settings ++
       Seq(
-        name := "kafka-connect-elastic6",
+        name := "kafka-connect-elastic-common",
         description := "Kafka Connect compatible connectors to move data between Kafka and popular data stores",
-        libraryDependencies ++= baseDeps ++ kafkaConnectElastic6Deps,
+        libraryDependencies ++= baseDeps ++ kafkaConnectElasticBaseDeps,
         publish / skip := true,
-        FunctionalTest / baseDirectory := (LocalRootProject / baseDirectory).value,
         packExcludeJars := Seq(
           "scala-.*\\.jar",
           "zookeeper-.*\\.jar",
@@ -240,20 +242,43 @@ lazy val elastic6 = (project in file("kafka-connect-elastic6"))
   )
   .configureAssembly(true)
   .configureTests(baseTestDeps)
-  .configureIntegrationTests(kafkaConnectElastic6TestDeps)
+  .configureIntegrationTests(kafkaConnectElastic8TestDeps)
+  .configureFunctionalTests()
+  .disablePlugins(PackPlugin)
+
+lazy val elastic8 = (project in file("kafka-connect-elastic8"))
+  .dependsOn(common)
+  .dependsOn(`elastic-common`)
+  .dependsOn(`test-common` % "fun->compile;it->compile")
+  .settings(
+    settings ++
+      Seq(
+        name := "kafka-connect-elastic8",
+        description := "Kafka Connect compatible connectors to move data between Kafka and popular data stores",
+        libraryDependencies ++= baseDeps ++ kafkaConnectElastic8Deps,
+        publish / skip := true,
+        packExcludeJars := Seq(
+          "scala-.*\\.jar",
+          "zookeeper-.*\\.jar",
+        ),
+      ),
+  )
+  .configureAssembly(true)
+  .configureTests(baseTestDeps)
+  .configureIntegrationTests(kafkaConnectElastic8TestDeps)
   .configureFunctionalTests()
   .enablePlugins(PackPlugin)
 
-lazy val elastic7 = (project in file("kafka-connect-elastic7"))
+lazy val opensearch = (project in file("kafka-connect-opensearch"))
   .dependsOn(common)
-  .dependsOn(`sql-common`)
-  .dependsOn(`test-common` % "fun->compile")
+  .dependsOn(`elastic-common`)
+  .dependsOn(`test-common` % "fun->compile;it->compile")
   .settings(
     settings ++
       Seq(
-        name := "kafka-connect-elastic7",
+        name := "kafka-connect-opensearch",
         description := "Kafka Connect compatible connectors to move data between Kafka and popular data stores",
-        libraryDependencies ++= baseDeps ++ kafkaConnectElastic7Deps,
+        libraryDependencies ++= baseDeps ++ kafkaConnectOpenSearchDeps,
         publish / skip := true,
         packExcludeJars := Seq(
           "scala-.*\\.jar",
@@ -261,10 +286,10 @@ lazy val elastic7 = (project in file("kafka-connect-elastic7"))
         ),
       ),
   )
-  .configureAssembly(true)
+  .configureAssembly(false)
   .configureTests(baseTestDeps)
-  .configureIntegrationTests(kafkaConnectElastic7TestDeps)
-  .configureFunctionalTests()
+  //.configureIntegrationTests(kafkaConnectOpenSearchTestDeps)
+  .configureFunctionalTests(bouncyCastle)
   .enablePlugins(PackPlugin)
 
 lazy val http = (project in file("kafka-connect-http"))

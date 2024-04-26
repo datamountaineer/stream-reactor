@@ -15,18 +15,18 @@
  */
 package io.lenses.streamreactor.connect.cassandra.sink
 
+import cats.implicits.toBifunctorOps
+import com.typesafe.scalalogging.StrictLogging
 import io.lenses.streamreactor.common.config.Helpers
 import io.lenses.streamreactor.common.utils.JarManifest
-
-import java.util
 import io.lenses.streamreactor.connect.cassandra.config.CassandraConfigConstants
 import io.lenses.streamreactor.connect.cassandra.config.CassandraConfigSink
-import com.typesafe.scalalogging.StrictLogging
 import org.apache.kafka.common.config.ConfigDef
 import org.apache.kafka.connect.connector.Task
 import org.apache.kafka.connect.errors.ConnectException
 import org.apache.kafka.connect.sink.SinkConnector
 
+import java.util
 import scala.jdk.CollectionConverters.MapHasAsScala
 import scala.jdk.CollectionConverters.SeqHasAsJava
 import scala.util.Failure
@@ -66,7 +66,7 @@ class CassandraSinkConnector extends SinkConnector with StrictLogging {
     */
   override def start(props: util.Map[String, String]): Unit = {
     //check input topics
-    Helpers.checkInputTopics(CassandraConfigConstants.KCQL, props.asScala.toMap)
+    Helpers.checkInputTopics(CassandraConfigConstants.KCQL, props.asScala.toMap).leftMap(throw _)
     configProps = props
     Try(new CassandraConfigSink(props.asScala.toMap)) match {
       case Failure(f) =>

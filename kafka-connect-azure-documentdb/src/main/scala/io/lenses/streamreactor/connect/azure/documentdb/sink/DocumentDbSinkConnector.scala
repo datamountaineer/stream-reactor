@@ -15,6 +15,7 @@
  */
 package io.lenses.streamreactor.connect.azure.documentdb.sink
 
+import cats.implicits.toBifunctorOps
 import io.lenses.streamreactor.common.config.Helpers
 import io.lenses.streamreactor.common.utils.JarManifest
 import io.lenses.streamreactor.connect.azure.documentdb.DocumentClientProvider
@@ -100,7 +101,7 @@ class DocumentDbSinkConnector private[sink] (builder: DocumentDbSinkSettings => 
     configProps = props
 
     //check input topics
-    Helpers.checkInputTopics(DocumentDbConfigConstants.KCQL_CONFIG, props.asScala.toMap)
+    Helpers.checkInputTopics(DocumentDbConfigConstants.KCQL_CONFIG, props.asScala.toMap).leftMap(throw _)
 
     val settings = DocumentDbSinkSettings(config)
 

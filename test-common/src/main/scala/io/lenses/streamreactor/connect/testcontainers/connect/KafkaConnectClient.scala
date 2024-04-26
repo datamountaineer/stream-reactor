@@ -50,7 +50,7 @@ class KafkaConnectClient(kafkaConnectContainer: KafkaConnectContainer) extends S
     timeoutSeconds: Long = 10L,
   ): Unit = {
     val httpPost = HttpRequest.newBuilder()
-      .POST(HttpRequest.BodyPublishers.ofString(connector.toJson()))
+      .POST(HttpRequest.BodyPublishers.ofString(connector.toJson))
       .uri(URI.create(s"${kafkaConnectContainer.hostNetwork.restEndpointUrl}/connectors"))
       .header("Accept", "application/json")
       .header("Content-Type", "application/json")

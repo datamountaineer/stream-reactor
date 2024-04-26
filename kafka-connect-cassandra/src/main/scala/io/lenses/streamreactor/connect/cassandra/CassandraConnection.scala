@@ -15,9 +15,9 @@
  */
 package io.lenses.streamreactor.connect.cassandra
 
-import io.lenses.streamreactor.common.config.SSLConfig
-import io.lenses.streamreactor.common.config.SSLConfigContext
 import io.lenses.streamreactor.connect.cassandra.config.CassandraConfigConstants
+import io.lenses.streamreactor.connect.cassandra.config.SSLConfig
+import io.lenses.streamreactor.connect.cassandra.config.SSLConfigContext
 import io.lenses.streamreactor.connect.cassandra.config.LoadBalancingPolicy
 import com.datastax.driver.core.Cluster.Builder
 import com.datastax.driver.core.policies.DCAwareRoundRobinPolicy

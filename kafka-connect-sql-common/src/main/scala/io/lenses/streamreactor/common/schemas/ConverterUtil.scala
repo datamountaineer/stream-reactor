@@ -16,7 +16,6 @@
 package io.lenses.streamreactor.common.schemas
 
 import com.fasterxml.jackson.databind.JsonNode
-import io.confluent.connect.avro.AvroConverter
 import io.confluent.connect.avro.AvroData
 import io.lenses.streamreactor.common.schemas.StructHelper._
 import io.lenses.streamreactor.connect.json.SimpleJsonConverter
@@ -24,7 +23,6 @@ import org.apache.avro.generic.GenericRecord
 import org.apache.kafka.connect.connector.ConnectRecord
 import org.apache.kafka.connect.data._
 import org.apache.kafka.connect.errors.ConnectException
-import org.apache.kafka.connect.json.JsonDeserializer
 import org.apache.kafka.connect.sink.SinkRecord
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -45,8 +43,6 @@ trait ConverterUtil {
   type avroSchema = org.apache.avro.Schema
 
   lazy val simpleJsonConverter = new SimpleJsonConverter()
-  lazy val deserializer        = new JsonDeserializer()
-  lazy val avroConverter       = new AvroConverter()
   lazy val avroData            = new AvroData(100)
 
   //for converting json to

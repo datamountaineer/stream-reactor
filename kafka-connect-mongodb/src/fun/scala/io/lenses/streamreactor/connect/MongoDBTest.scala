@@ -1,5 +1,4 @@
 package io.lenses.streamreactor.connect
-
 import cats.effect.IO
 import cats.effect.testing.scalatest.AsyncIOSpec
 import _root_.io.confluent.kafka.serializers.KafkaJsonSerializer

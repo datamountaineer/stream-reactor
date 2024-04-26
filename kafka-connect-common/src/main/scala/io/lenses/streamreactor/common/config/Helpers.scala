@@ -15,6 +15,7 @@
  */
 package io.lenses.streamreactor.common.config
 
+import cats.implicits.catsSyntaxEitherId
 import io.lenses.kcql.Kcql
 import com.typesafe.scalalogging.StrictLogging
 import org.apache.kafka.common.config.ConfigException
@@ -26,11 +27,11 @@ import org.apache.kafka.common.config.ConfigException
 
 object Helpers extends StrictLogging {
 
-  def checkInputTopics(kcqlConstant: String, props: Map[String, String]): Boolean = {
+  def checkInputTopics(kcqlConstant: String, props: Map[String, String]): Either[Throwable, Unit] = {
     val topics = props("topics").split(",").map(t => t.trim).toSet
     val raw    = props(kcqlConstant)
     if (raw.isEmpty) {
-      throw new ConfigException(s"Missing $kcqlConstant")
+      return new ConfigException(s"Missing $kcqlConstant").asLeft
     }
     val kcql    = raw.split(";").map(r => Kcql.parse(r)).toSet
     val sources = kcql.map(k => k.getSource)
@@ -38,20 +39,20 @@ object Helpers extends StrictLogging {
 
     if (!res) {
       val missing = topics.diff(sources)
-      throw new ConfigException(
+      return new ConfigException(
         s"Mandatory `topics` configuration contains topics not set in $kcqlConstant: ${missing}, kcql contains $sources",
-      )
+      ).asLeft
     }
 
     val res1 = sources.subsetOf(topics)
 
     if (!res1) {
       val missing = topics.diff(sources)
-      throw new ConfigException(
+      return new ConfigException(
         s"$kcqlConstant configuration contains topics not set in mandatory `topic` configuration: ${missing}, kcql contains $sources",
-      )
+      ).asLeft
     }
 
-    true
+    ().asRight
   }
 }

@@ -25,7 +25,7 @@ case class ConnectorConfiguration(
 
   implicit val formats: DefaultFormats.type = DefaultFormats
 
-  def toJson(): String = {
+  def toJson: String = {
     val mergedConfigMap = config + ("tasks.max" -> ConfigValue(1))
     Serialization.write(
       Map[String, Any](

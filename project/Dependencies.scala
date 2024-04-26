@@ -132,16 +132,22 @@ object Dependencies {
       val elastic4sVersion, elasticSearchVersion, jnaVersion: String
     }
 
-    object Elastic6Versions extends ElasticVersions() {
-      override val elastic4sVersion:     String = "6.7.8"
-      override val elasticSearchVersion: String = "6.8.23"
-      override val jnaVersion:           String = "3.3.0"
-    }
-
     object Elastic7Versions extends ElasticVersions {
       override val elastic4sVersion:     String = "7.17.4"
       override val elasticSearchVersion: String = "7.17.20"
       override val jnaVersion:           String = "5.14.0"
+    }
+
+    object Elastic8Versions extends ElasticVersions {
+      override val elastic4sVersion:     String = "8.9.2"
+      override val elasticSearchVersion: String = "8.10.1"
+      override val jnaVersion:           String = "4.5.2"
+    }
+
+    object OpenSearchVersions extends ElasticVersions {
+      override val elastic4sVersion:     String = "8.9.2"
+      override val elasticSearchVersion: String = "8.10.1"
+      override val jnaVersion:           String = "4.5.2"
     }
 
   }
@@ -258,8 +264,10 @@ object Dependencies {
 
   lazy val calciteLinq4J = "org.apache.calcite" % "calcite-linq4j" % calciteVersion
 
-  lazy val s3Sdk  = "software.amazon.awssdk" % "s3"  % awsSdkVersion
-  lazy val stsSdk = "software.amazon.awssdk" % "sts" % awsSdkVersion
+  lazy val s3Sdk         = "software.amazon.awssdk" % "s3"         % awsSdkVersion
+  lazy val stsSdk        = "software.amazon.awssdk" % "sts"        % awsSdkVersion
+  lazy val javaxBind     = "javax.xml.bind"         % "jaxb-api"   % javaxBindVersion
+  lazy val awsOpenSearch = "software.amazon.awssdk" % "opensearch" % awsSdkVersion
 
   lazy val azureDataLakeSdk: ModuleID = "com.azure" % "azure-storage-file-datalake" % azureDataLakeVersion
   lazy val azureIdentity:    ModuleID = "com.azure" % "azure-identity"              % azureIdentityVersion
@@ -365,15 +373,18 @@ object Dependencies {
   lazy val festAssert = "org.easytesting" % "fest-assert" % "1.4"
 
   def elastic4sCore(v:    String): ModuleID = "com.sksamuel.elastic4s" %% "elastic4s-core"          % v
+  def elastic4sCats(v:    String): ModuleID = "com.sksamuel.elastic4s" %% "elastic4s-effect-cats-3" % v
   def elastic4sClient(v:  String): ModuleID = "com.sksamuel.elastic4s" %% "elastic4s-client-esjava" % v
   def elastic4sTestKit(v: String): ModuleID = "com.sksamuel.elastic4s" %% "elastic4s-testkit"       % v
   def elastic4sHttp(v:    String): ModuleID = "com.sksamuel.elastic4s" %% "elastic4s-http"          % v
 
-  def elasticSearch(v:         String): ModuleID = "org.elasticsearch"                 % "elasticsearch"   % v
-  def elasticSearchAnalysis(v: String): ModuleID = "org.codelibs.elasticsearch.module" % "analysis-common" % v
+  def elasticSearch(v:         String): ModuleID = "co.elastic.clients"                % "elasticsearch-java" % v
+  def elasticSearchAnalysis(v: String): ModuleID = "org.codelibs.elasticsearch.module" % "analysis-common"    % v
 
   def jna(v: String): ModuleID = "net.java.dev.jna" % "jna" % v
 
+  val openSearchRest: ModuleID = "org.opensearch.client" % "opensearch-rest-client" % "2.9.0"
+  val openSearchJava: ModuleID = "org.opensearch.client" % "opensearch-java"        % "2.6.0"
 }
 
 trait Dependencies {
@@ -529,15 +540,16 @@ trait Dependencies {
     testContainersScalaElasticsearch,
   )
 
-  val kafkaConnectElastic6Deps: Seq[ModuleID] =
-    elasticCommonDeps(Elastic6Versions) ++ Seq(elastic4sHttp(Elastic6Versions.elastic4sVersion))
+  val kafkaConnectElasticBaseDeps: Seq[ModuleID] =
+    Seq[ModuleID]()
 
-  val kafkaConnectElastic6TestDeps: Seq[ModuleID] = baseTestDeps ++ elasticTestCommonDeps(Elastic6Versions)
+  val kafkaConnectElastic8Deps: Seq[ModuleID] =
+    kafkaConnectElasticBaseDeps ++ Seq(elastic4sClient(Elastic8Versions.elastic4sVersion))
 
-  val kafkaConnectElastic7Deps: Seq[ModuleID] =
-    elasticCommonDeps(Elastic7Versions) ++ Seq(elastic4sClient(Elastic7Versions.elastic4sVersion))
+  val kafkaConnectOpenSearchDeps: Seq[ModuleID] =
+    kafkaConnectElasticBaseDeps ++ Seq(openSearchRest, openSearchJava, awsOpenSearch, stsSdk)
 
-  val kafkaConnectElastic7TestDeps: Seq[ModuleID] = baseTestDeps ++ elasticTestCommonDeps(Elastic7Versions)
+  val kafkaConnectElastic8TestDeps: Seq[ModuleID] = baseTestDeps ++ elasticTestCommonDeps(Elastic8Versions)
 
   val kafkaConnectFtpDeps: Seq[ModuleID] = Seq(commonsNet, commonsCodec, commonsIO, commonsLang3, jsch)
 
@@ -565,7 +577,7 @@ trait Dependencies {
     testcontainersMongodb,
     jedis,
     mongoDb,
-  )
+  ) ++ bouncyCastle
 
   val nettyOverrides: Seq[ModuleID] = Seq(
     nettyCommon,

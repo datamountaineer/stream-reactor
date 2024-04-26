@@ -15,6 +15,7 @@
  */
 package io.lenses.streamreactor.connect.influx
 
+import cats.implicits.toBifunctorOps
 import io.lenses.streamreactor.common.config.Helpers
 import io.lenses.streamreactor.common.utils.JarManifest
 
@@ -63,7 +64,7 @@ class InfluxSinkConnector extends SinkConnector with StrictLogging {
     */
   override def start(props: util.Map[String, String]): Unit = {
     logger.info(s"Starting InfluxDb sink task with ${props.toString}.")
-    Helpers.checkInputTopics(InfluxConfigConstants.KCQL_CONFIG, props.asScala.toMap)
+    Helpers.checkInputTopics(InfluxConfigConstants.KCQL_CONFIG, props.asScala.toMap).leftMap(throw _)
     configProps = Some(props)
   }
 

@@ -15,6 +15,7 @@
  */
 package io.lenses.streamreactor.connect.mqtt.sink
 
+import cats.implicits.toBifunctorOps
 import io.lenses.streamreactor.common.config.Helpers
 import io.lenses.streamreactor.common.utils.JarManifest
 import io.lenses.streamreactor.connect.mqtt.config.MqttConfigConstants
@@ -40,7 +41,7 @@ class MqttSinkConnector extends SinkConnector with StrictLogging {
 
   override def start(props: util.Map[String, String]): Unit = {
     logger.info(s"Starting Mqtt sink connector.")
-    Helpers.checkInputTopics(MqttConfigConstants.KCQL_CONFIG, props.asScala.toMap)
+    Helpers.checkInputTopics(MqttConfigConstants.KCQL_CONFIG, props.asScala.toMap).leftMap(throw _)
     configProps = Some(props)
   }
 

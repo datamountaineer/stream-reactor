@@ -15,6 +15,7 @@
  */
 package io.lenses.streamreactor.connect.jms.sink
 
+import cats.implicits.toBifunctorOps
 import io.lenses.streamreactor.common.config.Helpers
 import io.lenses.streamreactor.common.utils.JarManifest
 import io.lenses.streamreactor.connect.jms.config.JMSConfig
@@ -62,7 +63,7 @@ class JMSSinkConnector extends SinkConnector with StrictLogging {
     */
   override def start(props: util.Map[String, String]): Unit = {
     logger.info(s"Starting Jms sink task.")
-    Helpers.checkInputTopics(JMSConfigConstants.KCQL, props.asScala.toMap)
+    Helpers.checkInputTopics(JMSConfigConstants.KCQL, props.asScala.toMap).leftMap(throw _)
     configProps = Some(props)
   }
 

@@ -36,11 +36,14 @@ import org.scalatest.time.Span
 import org.scalatest.AsyncTestSuite
 import org.scalatest.BeforeAndAfterAll
 import org.testcontainers.containers.output.Slf4jLogConsumer
+import org.testcontainers.containers.BindMode
+import org.testcontainers.containers.GenericContainer
 import org.testcontainers.containers.KafkaContainer
 import org.testcontainers.containers.Network
 import org.testcontainers.utility.DockerImageName
 
 import java.nio.file.Files
+import java.nio.file.Path
 import java.nio.file.Paths
 import java.time.Duration
 import java.util.Properties
@@ -56,7 +59,13 @@ trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually w
 
   override implicit def patienceConfig: PatienceConfig = PatienceConfig(timeout = Span(1, Minute))
 
+  val commonName: Option[String] = None
+
   val network: Network = Network.SHARED
+
+  def useKeyStore: Boolean = false
+
+  def keyStorePath: Option[Path] = Option.when(useKeyStore)(KeyStoreUtils.createKeystore(commonName.fold("")(e => e)))
 
   def connectorModule: String
   def providedJars(): Seq[String] = Seq()
@@ -68,13 +77,31 @@ trait StreamReactorContainerPerSuite extends BeforeAndAfterAll with Eventually w
       .withLogConsumer(new Slf4jLogConsumer(logger.underlying))
 
   lazy val kafkaConnectContainer: KafkaConnectContainer = {
-    KafkaConnectContainer(
+    val c = KafkaConnectContainer(
       kafkaContainer          = kafkaContainer,
       schemaRegistryContainer = schemaRegistryContainer,
       connectPluginPath       = Some(connectPluginPath()),
       providedJars            = providedJars(),
-    ).withNetwork(network).withLogConsumer(new Slf4jLogConsumer(logger.underlying))
+    )
+      .withNetwork(network)
+      .withLogConsumer(new Slf4jLogConsumer(logger.underlying))
+
+    copyBinds(c, "/security")
+    c
   }
+
+  protected def copyBinds(container: GenericContainer[_], path: String): Unit =
+    keyStorePath.foreach {
+      ksp =>
+        container.addFileSystemBind(ksp.resolve("keystore.jks").toAbsolutePath.toString,
+                                    s"$path/keystore.jks",
+                                    BindMode.READ_WRITE,
+        )
+        container.addFileSystemBind(ksp.resolve("truststore.jks").toAbsolutePath.toString,
+                                    s"$path/truststore.jks",
+                                    BindMode.READ_WRITE,
+        )
+    }
 
   // Override for different SchemaRegistryContainer configs
   val schemaRegistryContainer: Option[SchemaRegistryContainer] =
