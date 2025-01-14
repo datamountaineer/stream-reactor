@@ -66,7 +66,7 @@ allprojects {
         testImplementation group: 'org.mockito', name: 'mockito-core', version: mockitoJupiterVersion
         testImplementation group: 'org.mockito', name: 'mockito-junit-jupiter', version: mockitoJupiterVersion
         testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter', version: jUnitVersion
-        testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.26.3'
+        testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.27.2'
     }
 
     test {
