@@ -41,7 +41,7 @@ object Dependencies {
     val scalaCheckVersion              = "1.18.1"
 
     val mockitoJunitJupiterVersion = "5.14.2"
-    val junitJupiterVersion        = "5.11.3"
+    val junitJupiterVersion        = "5.11.4"
     val assertjCoreVersion         = "3.26.3"
 
     val cyclopsVersion = "10.4.1"
