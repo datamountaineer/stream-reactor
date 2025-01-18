@@ -21,7 +21,7 @@ object Dependencies {
 
   // scala versions
   val scalaOrganization = "org.scala-lang"
-  val scalaVersion      = "2.13.15"
+  val scalaVersion      = "2.13.16"
   val supportedScalaVersions: Seq[String] = List(Dependencies.scalaVersion)
 
   val commonResolvers: Seq[MavenRepository] = Resolver.sonatypeOssRepos("public") ++
