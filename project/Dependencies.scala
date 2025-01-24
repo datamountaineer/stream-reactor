@@ -140,7 +140,7 @@ object Dependencies {
 
     val classGraphVersion    = "4.8.179"
     val nimbusJoseJwtVersion = "9.47"
-    val hadoopVersion        = "3.4.0"
+    val hadoopVersion        = "3.4.1"
     //val hadoopShadedProtobufVersion = "1.2.0"
 
     val airCompressorVersion = "2.0.2"
