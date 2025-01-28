@@ -142,6 +142,7 @@ abstract class CloudSourceTask[MD <: FileMetadata, C <: CloudSourceConfig[MD], C
         ReaderManagerBuilder(
           root,
           path,
+          config.compressionCodec,
           storageInterface,
           connectorTaskId,
           contextOffsetFn,
